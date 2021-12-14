@@ -10,14 +10,14 @@
 
 // Name of the plugin.
 // EDIT THIS: Replace with your plugin name.
-#define PLUGIN_NAME "Boilerplate"
+#define PLUGIN_NAME "Angle"
 
 // Enumeration of the different selectors possible.
 // Should follow the exact same order as the array declared in main.c
 // EDIT THIS: Change the naming (`selector_t`), and add your selector names.
 typedef enum {
     SWAP_EXACT_ETH_FOR_TOKENS = 0,
-    BOILERPLATE_DUMMY_2,
+    ANGLE_DUMMY_2,
 } selector_t;
 
 // Enumeration used to parse the smart contract data.
@@ -31,8 +31,8 @@ typedef enum {
     UNEXPECTED_PARAMETER,
 } parameter;
 
-// EDIT THIS: Rename `BOILERPLATE` to be the same as the one initialized in `main.c`.
-extern const uint8_t *const BOILERPLATE_SELECTORS[NUM_SELECTORS];
+// EDIT THIS: Rename `ANGLE` to be the same as the one initialized in `main.c`.
+extern const uint8_t *const ANGLE_SELECTORS[NUM_SELECTORS];
 
 // Shared global memory with Ethereum app. Must be at most 5 * 32 bytes.
 // EDIT THIS: This struct is used by your plugin to save the parameters you parse. You

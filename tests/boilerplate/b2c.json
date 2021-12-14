@@ -10,10 +10,10 @@
                         "path.1"
                     ],
                     "method": "swapExactETHForTokens",
-                    "plugin": "Boilerplate"
+                    "plugin": "Angle"
 		        }
 	        }
 	    }
     ],
-    "name": "Boilerplate"
+    "name": "Angle"
 }

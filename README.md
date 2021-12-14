@@ -1,4 +1,4 @@
-# app-plugin-boilerplate
+# app-plugin-angle
 
 This repo is a meant to be a forkable example of a plugin.
 

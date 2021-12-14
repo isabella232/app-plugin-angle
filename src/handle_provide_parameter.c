@@ -1,4 +1,4 @@
-#include "boilerplate_plugin.h"
+#include "angle_plugin.h"
 
 // Copies the whole parameter (32 bytes long) from `src` to `dst`.
 // Useful for numbers, data...
@@ -76,7 +76,7 @@ void handle_provide_parameter(void *parameters) {
         case SWAP_EXACT_ETH_FOR_TOKENS:
             handle_swap_exact_eth_for_tokens(msg, context);
             break;
-        case BOILERPLATE_DUMMY_2:
+        case ANGLE_DUMMY_2:
             break;
         default:
             PRINTF("Selector Index not supported: %d\n", context->selectorIndex);

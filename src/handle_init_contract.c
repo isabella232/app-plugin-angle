@@ -1,4 +1,4 @@
-#include "boilerplate_plugin.h"
+#include "angle_plugin.h"
 
 // Called once to init.
 void handle_init_contract(void *parameters) {
@@ -28,7 +28,7 @@ void handle_init_contract(void *parameters) {
     // Look for the index of the selectorIndex passed in by `msg`.
     uint8_t i;
     for (i = 0; i < NUM_SELECTORS; i++) {
-        if (memcmp((uint8_t *) PIC(BOILERPLATE_SELECTORS[i]), msg->selector, SELECTOR_SIZE) == 0) {
+        if (memcmp((uint8_t *) PIC(ANGLE_SELECTORS[i]), msg->selector, SELECTOR_SIZE) == 0) {
             context->selectorIndex = i;
             break;
         }
@@ -46,7 +46,7 @@ void handle_init_contract(void *parameters) {
         case SWAP_EXACT_ETH_FOR_TOKENS:
             context->next_param = MIN_AMOUNT_RECEIVED;
             break;
-        case BOILERPLATE_DUMMY_2:
+        case ANGLE_DUMMY_2:
             context->next_param = TOKEN_RECEIVED;
         // Keep this
         default:

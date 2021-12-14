@@ -22,7 +22,7 @@ endif
 include $(BOLOS_SDK)/Makefile.defines
 
 # EDIT THIS: Put your plugin name
-APPNAME = "Boilerplate"
+APPNAME = "Angle"
 
 APP_LOAD_PARAMS += --appFlags 0x800 --path "44'/60'" --path "45'" --curve secp256k1
 
@@ -35,9 +35,9 @@ APPVERSION       = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
 # EDIT THIS: Change the name of the gif, and generate you own GIFs!
 ifeq ($(TARGET_NAME), TARGET_NANOX)
-ICONNAME=icons/nanox_app_boilerplate.gif
+ICONNAME=icons/nanox_app_angle.gif
 else
-ICONNAME=icons/nanos_app_boilerplate.gif
+ICONNAME=icons/nanos_app_angle.gif
 endif
 
 ################
@@ -143,5 +143,5 @@ include $(BOLOS_SDK)/Makefile.rules
 dep/%.d: %.c Makefile
 
 listvariants:
-        # EDIT THIS: replace `boilerplate` by the lowercase name of your plugin
-	@echo VARIANTS NONE boilerplate 
+        # EDIT THIS: replace `angle` by the lowercase name of your plugin
+	@echo VARIANTS NONE angle 

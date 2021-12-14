@@ -22,19 +22,19 @@
 #include "os.h"
 #include "cx.h"
 
-#include "boilerplate_plugin.h"
+#include "angle_plugin.h"
 
 // List of selectors supported by this plugin.
 // EDIT THIS: Adapt the variable names and change the `0x` values to match your selectors.
 static const uint8_t SWAP_EXACT_ETH_FOR_TOKENS_SELECTOR[SELECTOR_SIZE] = {0x7f, 0xf3, 0x6a, 0xb5};
-static const uint8_t BOILERPLATE_DUMMY_SELECTOR_2[SELECTOR_SIZE] = {0x13, 0x37, 0x42, 0x42};
+static const uint8_t ANGLE_DUMMY_SELECTOR_2[SELECTOR_SIZE] = {0x13, 0x37, 0x42, 0x42};
 
-// Array of all the different boilerplate selectors. Make sure this follows the same order as the
-// enum defined in `boilerplate_plugin.h`
+// Array of all the different angle selectors. Make sure this follows the same order as the
+// enum defined in `angle_plugin.h`
 // EDIT THIS: Use the names of the array declared above.
-const uint8_t *const BOILERPLATE_SELECTORS[NUM_SELECTORS] = {
+const uint8_t *const ANGLE_SELECTORS[NUM_SELECTORS] = {
     SWAP_EXACT_ETH_FOR_TOKENS_SELECTOR,
-    BOILERPLATE_DUMMY_SELECTOR_2,
+    ANGLE_DUMMY_SELECTOR_2,
 };
 
 // Function to dispatch calls from the ethereum app.
