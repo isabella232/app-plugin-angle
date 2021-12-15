@@ -17,8 +17,23 @@ static void copy_address(uint8_t *dst, size_t dst_len, uint8_t *src) {
     memcpy(dst, &src[offset], len);
 }
 
+/* Returns the index of the address provided in the POOL_MANAGERS table if found.
+   Otherwise, returns -1*/
+static int16_t get_pool_manager_index(uint8_t *src) {
+    // An address is 20 bytes long: so we need to make sure we skip the first 12 bytes!
+    uint8_t *pool_manager_addr = src + PARAMETER_LENGTH - ADDRESS_LENGTH;
+    for (size_t i = 0; i < NUMBER_OF_POOL_MANAGERS; i++)
+    {
+        pool_manager_t *pool_manager = (pool_manager_t *) PIC(&POOL_MANAGERS[i]);
+        if(memcmp(pool_manager->address, pool_manager_addr, ADDRESS_LENGTH) == 0){
+            return i;
+        }
+    }
+    return POOL_MANAGER_NOT_FOUND;
+}
 // EDIT THIS: Remove this function and write your own handlers!
-static void handle_swap_exact_eth_for_tokens(ethPluginProvideParameter_t *msg, context_t *context) {
+static void handle_mint(ethPluginProvideParameter_t *msg, context_t *context) {
+    mint_ctx_t *mint_ctx = &context->mint_ctx;
     if (context->go_to_offset) {
         if (msg->parameterOffset != context->offset + SELECTOR_SIZE) {
             return;
@@ -26,31 +41,63 @@ static void handle_swap_exact_eth_for_tokens(ethPluginProvideParameter_t *msg, c
         context->go_to_offset = false;
     }
     switch (context->next_param) {
-        case MIN_AMOUNT_RECEIVED:  // amountOutMin
-            copy_parameter(context->amount_received,
-                           sizeof(context->amount_received),
+        case AMOUNT:  // amount of collateral
+            copy_parameter(mint_ctx->amount,
+                           sizeof(mint_ctx->amount),
                            msg->parameter);
-            context->next_param = PATH_OFFSET;
+            context->next_param = USER;
             break;
-        case PATH_OFFSET:  // path
-            context->offset = U2BE(msg->parameter, PARAMETER_LENGTH - 2);
-            context->next_param = BENEFICIARY;
+        case USER:  // newly minted agToken receiver
+            copy_address(mint_ctx->user, sizeof(mint_ctx->user), msg->parameter);
+            context->next_param = POOL_MANAGER;
             break;
-        case BENEFICIARY:  // to
-            copy_address(context->beneficiary, sizeof(context->beneficiary), msg->parameter);
-            context->next_param = PATH_LENGTH;
-            context->go_to_offset = true;
+        case POOL_MANAGER:
+            // An address is 20 bytes long: so we need to make sure we skip the first 12 bytes!
+            mint_ctx->poolManagerIndex = get_pool_manager_index(msg->parameter);
+            context->next_param = MIN_STABLE_AMOUNT;
             break;
-        case PATH_LENGTH:
-            context->offset = msg->parameterOffset - SELECTOR_SIZE + PARAMETER_LENGTH * 2;
-            context->go_to_offset = true;
-            context->next_param = TOKEN_RECEIVED;
-            break;
-        case TOKEN_RECEIVED:  // path[1] -> contract address of token received
-            copy_address(context->token_received, sizeof(context->token_received), msg->parameter);
+        case MIN_STABLE_AMOUNT: // minimum of agToken to mint for the tx not to fail
+            copy_address(mint_ctx->minStableAmount, sizeof(mint_ctx->minStableAmount), msg->parameter);
             context->next_param = UNEXPECTED_PARAMETER;
             break;
-        // Keep this
+        default:
+            PRINTF("Param not supported: %d\n", context->next_param);
+            msg->result = ETH_PLUGIN_RESULT_ERROR;
+            break;
+    }
+}
+
+static void handle_burn(ethPluginProvideParameter_t *msg, context_t *context) {
+    burn_ctx_t *burn_ctx = &context->burn_ctx;
+    if (context->go_to_offset) {
+        if (msg->parameterOffset != context->offset + SELECTOR_SIZE) {
+            return;
+        }
+        context->go_to_offset = false;
+    }
+    switch (context->next_param) {
+        case AMOUNT:  // amount of agToken to burn
+            copy_parameter(burn_ctx->amount,
+                           sizeof(burn_ctx->amount),
+                           msg->parameter);
+            context->next_param = USER;
+            break;
+        case BURNER:  // address of the owner of the agTokens to burn
+            copy_address(burn_ctx->burner, sizeof(burn_ctx->burner), msg->parameter);
+            context->next_param = DEST;
+            break;
+        case DEST:  // address of the collateral receiver
+            copy_address(burn_ctx->dest, sizeof(burn_ctx->dest), msg->parameter);
+            context->next_param = POOL_MANAGER;
+            break;
+        case POOL_MANAGER:
+            burn_ctx->poolManagerIndex = get_pool_manager_index(msg->parameter);
+            context->next_param = MIN_COLLAT_AMOUNT;
+            break;
+        case MIN_COLLAT_AMOUNT: // minimum of collateral to receive for the tx not to fail
+            copy_address(burn_ctx->minCollatAmount, sizeof(burn_ctx->minCollatAmount), msg->parameter);
+            context->next_param = UNEXPECTED_PARAMETER;
+            break;
         default:
             PRINTF("Param not supported: %d\n", context->next_param);
             msg->result = ETH_PLUGIN_RESULT_ERROR;
@@ -73,10 +120,11 @@ void handle_provide_parameter(void *parameters) {
 
     // EDIT THIS: adapt the cases and the names of the functions.
     switch (context->selectorIndex) {
-        case SWAP_EXACT_ETH_FOR_TOKENS:
-            handle_swap_exact_eth_for_tokens(msg, context);
+        case MINT:
+            handle_mint(msg, context);
             break;
-        case ANGLE_DUMMY_2:
+        case BURN:
+            handle_burn(msg, context);
             break;
         default:
             PRINTF("Selector Index not supported: %d\n", context->selectorIndex);

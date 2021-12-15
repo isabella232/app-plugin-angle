@@ -26,15 +26,15 @@
 
 // List of selectors supported by this plugin.
 // EDIT THIS: Adapt the variable names and change the `0x` values to match your selectors.
-static const uint8_t SWAP_EXACT_ETH_FOR_TOKENS_SELECTOR[SELECTOR_SIZE] = {0x7f, 0xf3, 0x6a, 0xb5};
-static const uint8_t ANGLE_DUMMY_SELECTOR_2[SELECTOR_SIZE] = {0x13, 0x37, 0x42, 0x42};
+static const uint8_t MINT_SELECTOR[SELECTOR_SIZE] = {0x07, 0x4e, 0xe4, 0x46};
+static const uint8_t BURN_SELECTOR[SELECTOR_SIZE] = {0x6d, 0x10, 0x42, 0x16};
 
 // Array of all the different angle selectors. Make sure this follows the same order as the
 // enum defined in `angle_plugin.h`
 // EDIT THIS: Use the names of the array declared above.
 const uint8_t *const ANGLE_SELECTORS[NUM_SELECTORS] = {
-    SWAP_EXACT_ETH_FOR_TOKENS_SELECTOR,
-    ANGLE_DUMMY_SELECTOR_2,
+    MINT_SELECTOR,
+    BURN_SELECTOR,
 };
 
 // Function to dispatch calls from the ethereum app.

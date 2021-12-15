@@ -1,47 +1,26 @@
 #include "angle_plugin.h"
 
-// EDIT THIS: You need to adapt / remove the static functions (set_send_ui, set_receive_ui ...) to
-// match what you wish to display.
+// Set UI for a screen showing an amount.
+static void set_amount_ui(ethQueryContractUI_t *msg, char* title, uint8_t* amount, size_t amount_size, int16_t pool_manager_index, bool is_collateral) {
+    strlcpy(msg->title, title, msg->titleLength);
 
-// Set UI for the "Send" screen.
-// EDIT THIS: Adapt / remove this function to your needs.
-static void set_send_ui(ethQueryContractUI_t *msg) {
-    strlcpy(msg->title, "Send", msg->titleLength);
-
-    uint8_t *eth_amount = msg->pluginSharedRO->txContent->value.value;
-    uint8_t eth_amount_size = msg->pluginSharedRO->txContent->value.length;
-
-    // Converts the uint256 number located in `eth_amount` to its string representation and
-    // copies this to `msg->msg`.
-    amountToString(eth_amount, eth_amount_size, WEI_TO_ETHER, "ETH ", msg->msg, msg->msgLength);
-}
-
-// Set UI for "Receive" screen.
-// EDIT THIS: Adapt / remove this function to your needs.
-static void set_receive_ui(ethQueryContractUI_t *msg, context_t *context) {
-    strlcpy(msg->title, "Receive Min.", msg->titleLength);
-
-    uint8_t decimals = context->decimals;
-    char *ticker = context->ticker;
-
-    // If the token look up failed, use the default network ticker along with the default decimals.
-    if (!context->token_found) {
-        decimals = WEI_TO_ETHER;
-        ticker = msg->network_ticker;
+    if(pool_manager_index >= NUMBER_OF_POOL_MANAGERS){
+        msg->result = ETH_PLUGIN_RESULT_ERROR;
     }
-
-    amountToString(context->amount_received,
-                   sizeof(context->amount_received),
-                   decimals,
-                   ticker,
-                   msg->msg,
-                   msg->msgLength);
+    else if(pool_manager_index == POOL_MANAGER_NOT_FOUND){
+        amountToString(amount, amount_size, WEI_TO_ETHER, "UNKNOWN ", msg->msg, msg->msgLength);
+    }
+    else{
+        pool_manager_t *pool_manager = (pool_manager_t *) PIC(&POOL_MANAGERS[pool_manager_index]);
+        uint8_t decimals = is_collateral?pool_manager->collateral_decimals:pool_manager->agToken_decimals;
+        uint8_t ticker = is_collateral?pool_manager->collateral_ticker:pool_manager->agToken_ticker;
+        amountToString(amount, amount_size, decimals, ticker, msg->msg, msg->msgLength);
+    }
 }
 
-// Set UI for "Beneficiary" screen.
-// EDIT THIS: Adapt / remove this function to your needs.
-static void set_beneficiary_ui(ethQueryContractUI_t *msg, context_t *context) {
-    strlcpy(msg->title, "Beneficiary", msg->titleLength);
+// Set UI for a screen showing an address.
+static void set_address_ui(ethQueryContractUI_t *msg, char* title, uint8_t* address, size_t address_size) {
+    strlcpy(msg->title, title, msg->titleLength);
 
     // Prefix the address with `0x`.
     msg->msg[0] = '0';
@@ -54,10 +33,53 @@ static void set_beneficiary_ui(ethQueryContractUI_t *msg, context_t *context) {
     // Get the string representation of the address stored in `context->beneficiary`. Put it in
     // `msg->msg`.
     getEthAddressStringFromBinary(
-        context->beneficiary,
+        address,
         msg->msg + 2,  // +2 here because we've already prefixed with '0x'.
         msg->pluginSharedRW->sha3,
         chainid);
+}
+
+static void handle_mint_display(ethQueryContractUI_t *msg, context_t *context){
+    mint_ctx_t *mint_ctx = &context->mint_ctx;
+    switch (msg->screenIndex) {
+        case 0:
+            set_amount_ui(msg, "Send", mint_ctx->amount, sizeof(mint_ctx->amount), mint_ctx->poolManagerIndex, true);
+            break;
+        case 1:
+            set_amount_ui(msg, "Receive Min.", mint_ctx->minStableAmount, sizeof(mint_ctx->minStableAmount), mint_ctx->poolManagerIndex, false);
+            break;
+        case 2:
+            // optional
+            set_address_ui(msg, "Receiver", mint_ctx->user, sizeof(mint_ctx->user));
+            break;
+        default:
+            PRINTF("Received an invalid screenIndex\n");
+            msg->result = ETH_PLUGIN_RESULT_ERROR;
+            return;
+    }
+}
+
+static void handle_burn_display(ethQueryContractUI_t *msg, context_t *context){
+    burn_ctx_t *burn_ctx = &context->burn_ctx;
+    switch (msg->screenIndex) {
+        case 0:
+            set_amount_ui(msg, "Send", burn_ctx->amount, sizeof(burn_ctx->amount), burn_ctx->poolManagerIndex, false);
+            break;
+        case 1:
+            set_address_ui(msg, "From", burn_ctx->burner, sizeof(burn_ctx->burner));
+            break;
+        case 2:
+            set_amount_ui(msg, "Receive Min.", burn_ctx->minCollatAmount, sizeof(burn_ctx->minCollatAmount), burn_ctx->poolManagerIndex, true);
+            break;
+        case 3:
+            // optional
+            set_address_ui(msg, "Receiver", burn_ctx->dest, sizeof(burn_ctx->dest));
+            break;
+        default:
+            PRINTF("Received an invalid screenIndex\n");
+            msg->result = ETH_PLUGIN_RESULT_ERROR;
+            return;
+    }
 }
 
 void handle_query_contract_ui(void *parameters) {
@@ -73,20 +95,16 @@ void handle_query_contract_ui(void *parameters) {
 
     msg->result = ETH_PLUGIN_RESULT_OK;
 
-    // EDIT THIS: Adapt the cases for the screens you'd like to display.
-    switch (msg->screenIndex) {
-        case 0:
-            set_send_ui(msg);
+    switch (context->selectorIndex) {
+        case MINT:
+            handle_mint_display(msg, context);
             break;
-        case 1:
-            set_receive_ui(msg, context);
-            break;
-        case 2:
-            set_beneficiary_ui(msg, context);
+        case BURN:
+            handle_burn_display(msg, context);
             break;
         // Keep this
         default:
-            PRINTF("Received an invalid screenIndex\n");
+            PRINTF("Selector index: %d not supported\n", context->selectorIndex);
             msg->result = ETH_PLUGIN_RESULT_ERROR;
             return;
     }

@@ -10,10 +10,12 @@ void handle_query_contract_id(void *parameters) {
     // For the first screen, display the plugin name.
     strlcpy(msg->name, PLUGIN_NAME, msg->nameLength);
 
-    // EDIT THIS: Adapt the cases by modifying the strings you pass to `strlcpy`.
     switch (context->selectorIndex) {
-        case SWAP_EXACT_ETH_FOR_TOKENS:
-            strlcpy(msg->version, "Swap", msg->versionLength);
+        case MINT:
+            strlcpy(msg->version, "Mint", msg->versionLength);
+            break;
+        case BURN:
+            strlcpy(msg->version, "Burn", msg->versionLength);
             break;
         // Keep this
         default:

@@ -43,12 +43,9 @@ void handle_init_contract(void *parameters) {
     // EDIT THIS: Adapt the `cases`, and set the `next_param` to be the first parameter you expect
     // to parse.
     switch (context->selectorIndex) {
-        case SWAP_EXACT_ETH_FOR_TOKENS:
-            context->next_param = MIN_AMOUNT_RECEIVED;
-            break;
-        case ANGLE_DUMMY_2:
-            context->next_param = TOKEN_RECEIVED;
-        // Keep this
+        case MINT:
+        case BURN:
+            context->next_param = AMOUNT;
         default:
             PRINTF("Missing selectorIndex: %d\n", context->selectorIndex);
             msg->result = ETH_PLUGIN_RESULT_ERROR;
