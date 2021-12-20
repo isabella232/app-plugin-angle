@@ -71,7 +71,7 @@ test('[Nano S] Burn agEUR with USDC with sender == burner and dest', zemu("nanos
 }));
 
 // NanoX test (same as nano s, except we use a raw tx instead of rebuilding one from contract abi)
-test('[Nano X] Burn agEUR with USDC with sender != user', zemu("nanox", async (sim, eth) => {
+test.skip('[Nano X] Burn agEUR with USDC with sender != user', zemu("nanox", async (sim, eth) => {
 
   const serializedTx = txFromEtherscan("0x02f90113018201708459682f00851e3a4dc5ee8303cb9c945addc89785d75c86ab939e9e15bfbbb7fc086a8780b8a46d1042160000000000000000000000000000000000000000000009247656c80b2129e79600000000000000000000000029864b53c8d7509de2ccf5fb76488cfd102ddfd000000000000000000000000029864b53c8d7509de2ccf5fb76488cfd102ddfd0000000000000000000000000e9f183fc656656f1f17af1f2b0df79b8ff9ad8ed0000000000000000000000000000000000000000000000000000000b2d884b41c080a0fee84d44824dc9628bde5e90b4954f41a5f93a02906503dd23739e3ffb7e5022a03455c4c56c169ad9859f4c2a79f06cf2850eb9442e10a185d77f2548009d65d2");
 
