@@ -1,25 +1,33 @@
 #include "angle_plugin.h"
 
 // Set UI for a screen showing an amount.
-static void set_amount_ui(ethQueryContractUI_t *msg, char* title, uint8_t* amount, size_t amount_size, int16_t pool_manager_index, bool is_collateral) {
+static void set_amount_ui(ethQueryContractUI_t *msg,
+                          char *title,
+                          uint8_t *amount,
+                          size_t amount_size,
+                          int16_t pool_manager_index,
+                          bool is_collateral) {
     strlcpy(msg->title, title, msg->titleLength);
 
-    if(pool_manager_index >= NUMBER_OF_POOL_MANAGERS){
+    if (pool_manager_index >= NUMBER_OF_POOL_MANAGERS) {
         msg->result = ETH_PLUGIN_RESULT_ERROR;
-    }
-    else if(pool_manager_index == POOL_MANAGER_NOT_FOUND){
+    } else if (pool_manager_index == POOL_MANAGER_NOT_FOUND) {
         amountToString(amount, amount_size, WEI_TO_ETHER, "UNKNOWN ", msg->msg, msg->msgLength);
-    }
-    else{
+    } else {
         pool_manager_t *pool_manager = (pool_manager_t *) PIC(&POOL_MANAGERS[pool_manager_index]);
-        uint8_t decimals = is_collateral?pool_manager->collateral_decimals:pool_manager->agToken_decimals;
-        char* ticker = (char *) PIC(is_collateral?pool_manager->collateral_ticker:pool_manager->agToken_ticker);
+        uint8_t decimals =
+            is_collateral ? pool_manager->collateral_decimals : pool_manager->agToken_decimals;
+        char *ticker = (char *) PIC(is_collateral ? pool_manager->collateral_ticker
+                                                  : pool_manager->agToken_ticker);
         amountToString(amount, amount_size, decimals, ticker, msg->msg, msg->msgLength);
     }
 }
 
 // Set UI for a screen showing an address.
-static void set_address_ui(ethQueryContractUI_t *msg, char* title, uint8_t* address, size_t address_size) {
+static void set_address_ui(ethQueryContractUI_t *msg,
+                           char *title,
+                           uint8_t *address,
+                           size_t address_size) {
     strlcpy(msg->title, title, msg->titleLength);
 
     // Prefix the address with `0x`.
@@ -39,14 +47,24 @@ static void set_address_ui(ethQueryContractUI_t *msg, char* title, uint8_t* addr
         chainid);
 }
 
-static void handle_mint_display(ethQueryContractUI_t *msg, context_t *context){
+static void handle_mint_display(ethQueryContractUI_t *msg, context_t *context) {
     mint_ctx_t *mint_ctx = &context->mint_ctx;
     switch (msg->screenIndex) {
         case 0:
-            set_amount_ui(msg, "Send", mint_ctx->amount, sizeof(mint_ctx->amount), mint_ctx->poolManagerIndex, true);
+            set_amount_ui(msg,
+                          "Send",
+                          mint_ctx->amount,
+                          sizeof(mint_ctx->amount),
+                          mint_ctx->poolManagerIndex,
+                          true);
             break;
         case 1:
-            set_amount_ui(msg, "Receive Min.", mint_ctx->minStableAmount, sizeof(mint_ctx->minStableAmount), mint_ctx->poolManagerIndex, false);
+            set_amount_ui(msg,
+                          "Receive Min.",
+                          mint_ctx->minStableAmount,
+                          sizeof(mint_ctx->minStableAmount),
+                          mint_ctx->poolManagerIndex,
+                          false);
             break;
         case 2:
             // optional
@@ -59,14 +77,24 @@ static void handle_mint_display(ethQueryContractUI_t *msg, context_t *context){
     }
 }
 
-static void handle_burn_display(ethQueryContractUI_t *msg, context_t *context){
+static void handle_burn_display(ethQueryContractUI_t *msg, context_t *context) {
     burn_ctx_t *burn_ctx = &context->burn_ctx;
     switch (msg->screenIndex) {
         case 0:
-            set_amount_ui(msg, "Send", burn_ctx->amount, sizeof(burn_ctx->amount), burn_ctx->poolManagerIndex, false);
+            set_amount_ui(msg,
+                          "Send",
+                          burn_ctx->amount,
+                          sizeof(burn_ctx->amount),
+                          burn_ctx->poolManagerIndex,
+                          false);
             break;
         case 1:
-            set_amount_ui(msg, "Receive Min.", burn_ctx->minCollatAmount, sizeof(burn_ctx->minCollatAmount), burn_ctx->poolManagerIndex, true);
+            set_amount_ui(msg,
+                          "Receive Min.",
+                          burn_ctx->minCollatAmount,
+                          sizeof(burn_ctx->minCollatAmount),
+                          burn_ctx->poolManagerIndex,
+                          true);
             break;
         case 2:
             // optional

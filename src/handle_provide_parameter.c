@@ -22,10 +22,9 @@ static void copy_address(uint8_t *dst, size_t dst_len, uint8_t *src) {
 static int16_t get_pool_manager_index(uint8_t *src) {
     // An address is 20 bytes long: so we need to make sure we skip the first 12 bytes!
     uint8_t *pool_manager_addr = src + PARAMETER_LENGTH - ADDRESS_LENGTH;
-    for (size_t i = 0; i < NUMBER_OF_POOL_MANAGERS; i++)
-    {
+    for (size_t i = 0; i < NUMBER_OF_POOL_MANAGERS; i++) {
         pool_manager_t *pool_manager = (pool_manager_t *) PIC(&POOL_MANAGERS[i]);
-        if(memcmp(pool_manager->address, pool_manager_addr, ADDRESS_LENGTH) == 0){
+        if (memcmp(pool_manager->address, pool_manager_addr, ADDRESS_LENGTH) == 0) {
             return i;
         }
     }
@@ -42,9 +41,7 @@ static void handle_mint(ethPluginProvideParameter_t *msg, context_t *context) {
     }
     switch (context->next_param) {
         case AMOUNT:  // amount of collateral
-            copy_parameter(mint_ctx->amount,
-                           sizeof(mint_ctx->amount),
-                           msg->parameter);
+            copy_parameter(mint_ctx->amount, sizeof(mint_ctx->amount), msg->parameter);
             context->next_param = USER;
             break;
         case USER:  // newly minted agToken receiver
@@ -56,8 +53,10 @@ static void handle_mint(ethPluginProvideParameter_t *msg, context_t *context) {
             mint_ctx->poolManagerIndex = get_pool_manager_index(msg->parameter);
             context->next_param = MIN_STABLE_AMOUNT;
             break;
-        case MIN_STABLE_AMOUNT: // minimum of agToken to mint for the tx not to fail
-            copy_parameter(mint_ctx->minStableAmount, sizeof(mint_ctx->minStableAmount), msg->parameter);
+        case MIN_STABLE_AMOUNT:  // minimum of agToken to mint for the tx not to fail
+            copy_parameter(mint_ctx->minStableAmount,
+                           sizeof(mint_ctx->minStableAmount),
+                           msg->parameter);
             context->next_param = UNEXPECTED_PARAMETER;
             break;
         default:
@@ -77,9 +76,7 @@ static void handle_burn(ethPluginProvideParameter_t *msg, context_t *context) {
     }
     switch (context->next_param) {
         case AMOUNT:  // amount of agToken to burn
-            copy_parameter(burn_ctx->amount,
-                           sizeof(burn_ctx->amount),
-                           msg->parameter);
+            copy_parameter(burn_ctx->amount, sizeof(burn_ctx->amount), msg->parameter);
             context->next_param = BURNER;
             break;
         case BURNER:  // address of the owner of the agTokens to burn
@@ -94,8 +91,10 @@ static void handle_burn(ethPluginProvideParameter_t *msg, context_t *context) {
             burn_ctx->poolManagerIndex = get_pool_manager_index(msg->parameter);
             context->next_param = MIN_COLLAT_AMOUNT;
             break;
-        case MIN_COLLAT_AMOUNT: // minimum of collateral to receive for the tx not to fail
-            copy_parameter(burn_ctx->minCollatAmount, sizeof(burn_ctx->minCollatAmount), msg->parameter);
+        case MIN_COLLAT_AMOUNT:  // minimum of collateral to receive for the tx not to fail
+            copy_parameter(burn_ctx->minCollatAmount,
+                           sizeof(burn_ctx->minCollatAmount),
+                           msg->parameter);
             context->next_param = UNEXPECTED_PARAMETER;
             break;
         default:
