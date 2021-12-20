@@ -9,7 +9,7 @@ static void set_amount_ui(ethQueryContractUI_t *msg,
                           bool is_collateral) {
     strlcpy(msg->title, title, msg->titleLength);
 
-    if (pool_manager_index >= NUMBER_OF_POOL_MANAGERS) {
+    if (pool_manager_index >= (int16_t) NUMBER_OF_POOL_MANAGERS) {
         msg->result = ETH_PLUGIN_RESULT_ERROR;
     } else if (pool_manager_index == POOL_MANAGER_NOT_FOUND) {
         amountToString(amount, amount_size, WEI_TO_ETHER, "UNKNOWN ", msg->msg, msg->msgLength);
@@ -24,10 +24,7 @@ static void set_amount_ui(ethQueryContractUI_t *msg,
 }
 
 // Set UI for a screen showing an address.
-static void set_address_ui(ethQueryContractUI_t *msg,
-                           char *title,
-                           uint8_t *address,
-                           size_t address_size) {
+static void set_address_ui(ethQueryContractUI_t *msg, char *title, uint8_t *address) {
     strlcpy(msg->title, title, msg->titleLength);
 
     // Prefix the address with `0x`.
@@ -68,7 +65,7 @@ static void handle_mint_display(ethQueryContractUI_t *msg, context_t *context) {
             break;
         case 2:
             // optional
-            set_address_ui(msg, "Receiver", mint_ctx->user, sizeof(mint_ctx->user));
+            set_address_ui(msg, "Receiver", mint_ctx->user);
             break;
         default:
             PRINTF("Received an invalid screenIndex\n");
@@ -98,11 +95,11 @@ static void handle_burn_display(ethQueryContractUI_t *msg, context_t *context) {
             break;
         case 2:
             // optional
-            set_address_ui(msg, "Burner", burn_ctx->burner, sizeof(burn_ctx->burner));
+            set_address_ui(msg, "Burner", burn_ctx->burner);
             break;
         case 3:
             // optional
-            set_address_ui(msg, "Destination", burn_ctx->dest, sizeof(burn_ctx->dest));
+            set_address_ui(msg, "Destination", burn_ctx->dest);
             break;
         default:
             PRINTF("Received an invalid screenIndex\n");
