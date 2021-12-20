@@ -1,0 +1,22 @@
+{
+  "chainId": 1,
+  "contracts": [
+    {
+      "address": "0x5addc89785d75c86ab939e9e15bfbbb7fc086a87",
+      "contractName": "Angle Protocol: Stable Master Front",
+      "selectors": {
+        "0x074ee446": {
+          "erc20OfInterest": [],
+          "method": "mint",
+          "plugin": "Angle"
+        },
+        "0x6d104216": {
+          "erc20OfInterest": [],
+          "method": "burn",
+          "plugin": "Angle"
+        }
+      }
+    }
+  ],
+  "name": "Angle"
+}
