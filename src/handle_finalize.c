@@ -16,11 +16,11 @@ void handle_finalize(void *parameters) {
             }
             break;
         case BURN:
-            // amount, burner, minCollatAmount, (dest if dest != sender)
-            msg->numScreens = 3;
-            // If the beneficiary is NOT the sender, we will need an additional screen to display it.
-            if (memcmp(msg->address, context->burn_ctx.dest, ADDRESS_LENGTH) != 0) {
-                msg->numScreens += 1;
+            // amount, (burner if burner or dest != sender), minCollatAmount, (dest if burner or dest != sender)
+            msg->numScreens = 2;
+            // If the burner or the beneficiary is NOT the sender, we will need 2 additional screens to display them.
+            if (memcmp(msg->address, context->burn_ctx.burner, ADDRESS_LENGTH) != 0 || memcmp(msg->address, context->burn_ctx.dest, ADDRESS_LENGTH) != 0) {
+                msg->numScreens += 2;
             }
             break;
         default:

@@ -13,7 +13,7 @@ static void set_amount_ui(ethQueryContractUI_t *msg, char* title, uint8_t* amoun
     else{
         pool_manager_t *pool_manager = (pool_manager_t *) PIC(&POOL_MANAGERS[pool_manager_index]);
         uint8_t decimals = is_collateral?pool_manager->collateral_decimals:pool_manager->agToken_decimals;
-        uint8_t ticker = is_collateral?pool_manager->collateral_ticker:pool_manager->agToken_ticker;
+        char* ticker = (char *) PIC(is_collateral?pool_manager->collateral_ticker:pool_manager->agToken_ticker);
         amountToString(amount, amount_size, decimals, ticker, msg->msg, msg->msgLength);
     }
 }
@@ -66,14 +66,15 @@ static void handle_burn_display(ethQueryContractUI_t *msg, context_t *context){
             set_amount_ui(msg, "Send", burn_ctx->amount, sizeof(burn_ctx->amount), burn_ctx->poolManagerIndex, false);
             break;
         case 1:
-            set_address_ui(msg, "From", burn_ctx->burner, sizeof(burn_ctx->burner));
+            set_amount_ui(msg, "Receive Min.", burn_ctx->minCollatAmount, sizeof(burn_ctx->minCollatAmount), burn_ctx->poolManagerIndex, true);
             break;
         case 2:
-            set_amount_ui(msg, "Receive Min.", burn_ctx->minCollatAmount, sizeof(burn_ctx->minCollatAmount), burn_ctx->poolManagerIndex, true);
+            // optional
+            set_address_ui(msg, "Burner", burn_ctx->burner, sizeof(burn_ctx->burner));
             break;
         case 3:
             // optional
-            set_address_ui(msg, "Receiver", burn_ctx->dest, sizeof(burn_ctx->dest));
+            set_address_ui(msg, "Destination", burn_ctx->dest, sizeof(burn_ctx->dest));
             break;
         default:
             PRINTF("Received an invalid screenIndex\n");

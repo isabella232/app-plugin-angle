@@ -57,7 +57,7 @@ static void handle_mint(ethPluginProvideParameter_t *msg, context_t *context) {
             context->next_param = MIN_STABLE_AMOUNT;
             break;
         case MIN_STABLE_AMOUNT: // minimum of agToken to mint for the tx not to fail
-            copy_address(mint_ctx->minStableAmount, sizeof(mint_ctx->minStableAmount), msg->parameter);
+            copy_parameter(mint_ctx->minStableAmount, sizeof(mint_ctx->minStableAmount), msg->parameter);
             context->next_param = UNEXPECTED_PARAMETER;
             break;
         default:
@@ -80,7 +80,7 @@ static void handle_burn(ethPluginProvideParameter_t *msg, context_t *context) {
             copy_parameter(burn_ctx->amount,
                            sizeof(burn_ctx->amount),
                            msg->parameter);
-            context->next_param = USER;
+            context->next_param = BURNER;
             break;
         case BURNER:  // address of the owner of the agTokens to burn
             copy_address(burn_ctx->burner, sizeof(burn_ctx->burner), msg->parameter);
@@ -95,7 +95,7 @@ static void handle_burn(ethPluginProvideParameter_t *msg, context_t *context) {
             context->next_param = MIN_COLLAT_AMOUNT;
             break;
         case MIN_COLLAT_AMOUNT: // minimum of collateral to receive for the tx not to fail
-            copy_address(burn_ctx->minCollatAmount, sizeof(burn_ctx->minCollatAmount), msg->parameter);
+            copy_parameter(burn_ctx->minCollatAmount, sizeof(burn_ctx->minCollatAmount), msg->parameter);
             context->next_param = UNEXPECTED_PARAMETER;
             break;
         default:
