@@ -44,7 +44,6 @@ test('[Nano S] Mint agEUR with USDC with sender != user', zemu("nanos", async (s
   // Wait for the application to actually load and parse the transaction
   await waitForAppScreen(sim);
   // Navigate the display by pressing the right button 10 times, then pressing both buttons to accept the transaction.
-  // EDIT THIS: modify `10` to fix the number of screens you are expecting to navigate through.
   await sim.navigateAndCompareSnapshots('.', 'nanos_mint_ageur_usdc_with_different_sender_and_user', [10, 0]);
 
   await tx;
@@ -80,8 +79,7 @@ test('[Nano S] Mint agEUR with USDC with sender == user', zemu("nanos", async (s
 
   // Wait for the application to actually load and parse the transaction
   await waitForAppScreen(sim);
-  // Navigate the display by pressing the right button 10 times, then pressing both buttons to accept the transaction.
-  // EDIT THIS: modify `10` to fix the number of screens you are expecting to navigate through.
+  // Navigate the display by pressing the right button 7 times, then pressing both buttons to accept the transaction.
   await sim.navigateAndCompareSnapshots('.', 'nanos_mint_ageur_usdc_with_equal_sender_and_user', [7, 0]);
 
   await tx;
