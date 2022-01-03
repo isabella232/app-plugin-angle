@@ -47,6 +47,14 @@ void handle_init_contract(void *parameters) {
         case BURN:
             context->next_param = AMOUNT;
             break;
+        case OPEN_PERPETUAL:
+            context->next_param = BENEFICIARY;
+            break;
+        case ADD_TO_PERPETUAL:
+        case CLOSE_PERPETUAL:
+        case GET_REWARD_PERPETUAL:
+            context->next_param = PERPETUAL_ID;
+            break;
         default:
             PRINTF("Missing selectorIndex: %d\n", context->selectorIndex);
             msg->result = ETH_PLUGIN_RESULT_ERROR;

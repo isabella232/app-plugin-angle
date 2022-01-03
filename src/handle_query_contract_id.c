@@ -17,7 +17,18 @@ void handle_query_contract_id(void *parameters) {
         case BURN:
             strlcpy(msg->version, "Burn", msg->versionLength);
             break;
-        // Keep this
+        case OPEN_PERPETUAL:
+            strlcpy(msg->version, "Open Perpetual", msg->versionLength);
+            break;
+        case ADD_TO_PERPETUAL:
+            strlcpy(msg->version, "Add to Perpetual", msg->versionLength);
+            break;
+        case CLOSE_PERPETUAL:
+            strlcpy(msg->version, "Close Perpetual", msg->versionLength);
+            break;
+        case GET_REWARD_PERPETUAL:
+            strlcpy(msg->version, "Get Reward", msg->versionLength);
+            break;
         default:
             PRINTF("Selector index: %d not supported\n", context->selectorIndex);
             msg->result = ETH_PLUGIN_RESULT_ERROR;

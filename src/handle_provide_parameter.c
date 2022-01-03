@@ -1,61 +1,35 @@
 #include "angle_plugin.h"
+#include "helpers.h"
 
-// Copies the whole parameter (32 bytes long) from `src` to `dst`.
-// Useful for numbers, data...
-static void copy_parameter(uint8_t *dst, size_t dst_len, uint8_t *src) {
-    // Take the minimum between dst_len and parameter_length to make sure we don't overwrite memory.
-    size_t len = MIN(dst_len, PARAMETER_LENGTH);
-    memcpy(dst, src, len);
-}
-
-// Copies a 20 byte address (located in a 32 bytes parameter) `from `src` to `dst`.
-// Useful for token addresses, user addresses...
-static void copy_address(uint8_t *dst, size_t dst_len, uint8_t *src) {
-    // An address is 20 bytes long: so we need to make sure we skip the first 12 bytes!
-    size_t offset = PARAMETER_LENGTH - ADDRESS_LENGTH;
-    size_t len = MIN(dst_len, ADDRESS_LENGTH);
-    memcpy(dst, &src[offset], len);
-}
-
-/* Returns the index of the address provided in the POOL_MANAGERS table if found.
-   Otherwise, returns -1*/
-static int16_t get_pool_manager_index(uint8_t *src) {
-    // An address is 20 bytes long: so we need to make sure we skip the first 12 bytes!
-    uint8_t *pool_manager_addr = src + PARAMETER_LENGTH - ADDRESS_LENGTH;
-    for (size_t i = 0; i < NUMBER_OF_POOL_MANAGERS; i++) {
-        pool_manager_t *pool_manager = (pool_manager_t *) PIC(&POOL_MANAGERS[i]);
-        if (memcmp(pool_manager->address, pool_manager_addr, ADDRESS_LENGTH) == 0) {
-            return i;
-        }
-    }
-    return POOL_MANAGER_NOT_FOUND;
-}
-// EDIT THIS: Remove this function and write your own handlers!
-static void handle_mint(ethPluginProvideParameter_t *msg, context_t *context) {
-    mint_ctx_t *mint_ctx = &context->mint_ctx;
-    if (context->go_to_offset) {
-        if (msg->parameterOffset != context->offset + SELECTOR_SIZE) {
-            return;
-        }
-        context->go_to_offset = false;
-    }
+static void handle_agToken(ethPluginProvideParameter_t *msg, context_t *context) {
+    agToken_ctx_t *agToken_ctx = &context->agToken_ctx;
     switch (context->next_param) {
-        case AMOUNT:  // amount of collateral
-            copy_parameter(mint_ctx->amount, sizeof(mint_ctx->amount), msg->parameter);
-            context->next_param = USER;
+        case AMOUNT:  // amount of collateral/agToken
+            copy_parameter(agToken_ctx->amount, sizeof(agToken_ctx->amount), msg->parameter);
+            context->next_param = context->selectorIndex == MINT ? BENEFICIARY : BURNER;
             break;
-        case USER:  // newly minted agToken receiver
-            copy_address(mint_ctx->user, sizeof(mint_ctx->user), msg->parameter);
+        case BURNER:  // address of agToken burner
+            copy_address(agToken_ctx->burner, sizeof(agToken_ctx->burner), msg->parameter);
+            context->next_param = BENEFICIARY;
+            break;
+        case BENEFICIARY:  // address of agtoken/collateral receiver
+            copy_address(agToken_ctx->beneficiary,
+                         sizeof(agToken_ctx->beneficiary),
+                         msg->parameter);
             context->next_param = POOL_MANAGER;
             break;
         case POOL_MANAGER:
             // An address is 20 bytes long: so we need to make sure we skip the first 12 bytes!
-            mint_ctx->poolManagerIndex = get_pool_manager_index(msg->parameter);
-            context->next_param = MIN_STABLE_AMOUNT;
+            agToken_ctx->poolManagerIndex =
+                get_manager_contract_index(msg->parameter + PARAMETER_LENGTH - ADDRESS_LENGTH,
+                                           POOL_MANAGERS,
+                                           NUMBER_OF_POOL_MANAGERS);
+            context->next_param = MIN_RECEIVED_AMOUNT;
             break;
-        case MIN_STABLE_AMOUNT:  // minimum of agToken to mint for the tx not to fail
-            copy_parameter(mint_ctx->minStableAmount,
-                           sizeof(mint_ctx->minStableAmount),
+        case MIN_RECEIVED_AMOUNT:  // minimum of agToken / collateral to receive for the tx not to
+                                   // fail
+            copy_parameter(agToken_ctx->min_amount_received,
+                           sizeof(agToken_ctx->min_amount_received),
                            msg->parameter);
             context->next_param = UNEXPECTED_PARAMETER;
             break;
@@ -66,37 +40,52 @@ static void handle_mint(ethPluginProvideParameter_t *msg, context_t *context) {
     }
 }
 
-static void handle_burn(ethPluginProvideParameter_t *msg, context_t *context) {
-    burn_ctx_t *burn_ctx = &context->burn_ctx;
-    if (context->go_to_offset) {
-        if (msg->parameterOffset != context->offset + SELECTOR_SIZE) {
-            return;
-        }
-        context->go_to_offset = false;
-    }
+static void handle_perpetual(ethPluginProvideParameter_t *msg, context_t *context) {
+    perpetual_ctx_t *perpetual_ctx = &context->perpetual_ctx;
     switch (context->next_param) {
-        case AMOUNT:  // amount of agToken to burn
-            copy_parameter(burn_ctx->amount, sizeof(burn_ctx->amount), msg->parameter);
-            context->next_param = BURNER;
-            break;
-        case BURNER:  // address of the owner of the agTokens to burn
-            copy_address(burn_ctx->burner, sizeof(burn_ctx->burner), msg->parameter);
-            context->next_param = DEST;
-            break;
-        case DEST:  // address of the collateral receiver
-            copy_address(burn_ctx->dest, sizeof(burn_ctx->dest), msg->parameter);
-            context->next_param = POOL_MANAGER;
-            break;
-        case POOL_MANAGER:
-            burn_ctx->poolManagerIndex = get_pool_manager_index(msg->parameter);
-            context->next_param = MIN_COLLAT_AMOUNT;
-            break;
-        case MIN_COLLAT_AMOUNT:  // minimum of collateral to receive for the tx not to fail
-            copy_parameter(burn_ctx->minCollatAmount,
-                           sizeof(burn_ctx->minCollatAmount),
+        case PERPETUAL_ID:  // ID of an existing perpetual
+            copy_parameter(perpetual_ctx->perpetualID,
+                           sizeof(perpetual_ctx->perpetualID),
                            msg->parameter);
-            context->next_param = UNEXPECTED_PARAMETER;
+            context->next_param = context->selectorIndex == ADD_TO_PERPETUAL
+                                      ? AMOUNT
+                                      : CLOSE_PERPETUAL ? BENEFICIARY : UNEXPECTED_PARAMETER;
             break;
+        case BENEFICIARY:  // address of perpetual/collateral receiver
+            copy_address(perpetual_ctx->beneficiary,
+                         sizeof(perpetual_ctx->beneficiary),
+                         msg->parameter);
+            context->next_param = AMOUNT;
+            break;
+        case AMOUNT:  // amount of collateral/agToken
+            copy_parameter(perpetual_ctx->amount, sizeof(perpetual_ctx->amount), msg->parameter);
+            context->next_param =
+                context->selectorIndex == OPEN_PERPETUAL ? COMMITTED_AMOUNT : UNEXPECTED_PARAMETER;
+            break;
+        case COMMITTED_AMOUNT:  // amount of collateral covered by the perpetual to open
+            copy_parameter(perpetual_ctx->committedAmount,
+                           sizeof(perpetual_ctx->committedAmount),
+                           msg->parameter);
+            context->next_param = MAX_ORACLE_RATE;
+            break;
+        case MAX_ORACLE_RATE:  // maximum price of a unit of collateral denominated in agToken that
+                               // is aceptable to open the perpetual (eg: USDC perpetual on agEUR
+                               // with max_oracle_rate = 0.9 means that if oracle price goes over 1
+                               // USDC = 0.9 agEUR -> abort tx)
+            copy_parameter(perpetual_ctx->maxOracleRate,
+                           sizeof(perpetual_ctx->maxOracleRate),
+                           msg->parameter);
+            context->next_param = MIN_NET_MARGIN;
+            break;
+        case MIN_NET_MARGIN:  // minimum amount to open the perpetual with (original amount sent
+                              // minus protocol fees)
+        {
+            compute_leverage(&perpetual_ctx->leverage,
+                             perpetual_ctx->committedAmount,
+                             msg->parameter);
+            compute_fees(perpetual_ctx->max_opening_fees, perpetual_ctx->amount, msg->parameter);
+            context->next_param = UNEXPECTED_PARAMETER;
+        } break;
         default:
             PRINTF("Param not supported: %d\n", context->next_param);
             msg->result = ETH_PLUGIN_RESULT_ERROR;
@@ -120,10 +109,14 @@ void handle_provide_parameter(void *parameters) {
     // EDIT THIS: adapt the cases and the names of the functions.
     switch (context->selectorIndex) {
         case MINT:
-            handle_mint(msg, context);
-            break;
         case BURN:
-            handle_burn(msg, context);
+            handle_agToken(msg, context);
+            break;
+        case OPEN_PERPETUAL:
+        case ADD_TO_PERPETUAL:
+        case CLOSE_PERPETUAL:
+        case GET_REWARD_PERPETUAL:
+            handle_perpetual(msg, context);
             break;
         default:
             PRINTF("Selector Index not supported: %d\n", context->selectorIndex);

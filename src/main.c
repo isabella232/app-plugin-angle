@@ -28,14 +28,20 @@
 // EDIT THIS: Adapt the variable names and change the `0x` values to match your selectors.
 static const uint8_t MINT_SELECTOR[SELECTOR_SIZE] = {0x07, 0x4e, 0xe4, 0x46};
 static const uint8_t BURN_SELECTOR[SELECTOR_SIZE] = {0x6d, 0x10, 0x42, 0x16};
+static const uint8_t OPEN_PERPETUAL_SELECTOR[SELECTOR_SIZE] = {0xa6, 0x2b, 0x2a, 0x3d};
+static const uint8_t ADD_TO_PERPETUAL_SELECTOR[SELECTOR_SIZE] = {0x24, 0xd8, 0x3b, 0x79};
+static const uint8_t CLOSE_PERPETUAL_SELECTOR[SELECTOR_SIZE] = {0xe5, 0x23, 0x4c, 0x7a};
+static const uint8_t GET_REWARD_PERPETUAL_SELECTOR[SELECTOR_SIZE] = {0x1c, 0x4b, 0x77, 0x4b};
 
 // Array of all the different angle selectors. Make sure this follows the same order as the
 // enum defined in `angle_plugin.h`
 // EDIT THIS: Use the names of the array declared above.
-const uint8_t *const ANGLE_SELECTORS[NUM_SELECTORS] = {
-    MINT_SELECTOR,
-    BURN_SELECTOR,
-};
+const uint8_t *const ANGLE_SELECTORS[NUM_SELECTORS] = {MINT_SELECTOR,
+                                                       BURN_SELECTOR,
+                                                       OPEN_PERPETUAL_SELECTOR,
+                                                       ADD_TO_PERPETUAL_SELECTOR,
+                                                       CLOSE_PERPETUAL_SELECTOR,
+                                                       GET_REWARD_PERPETUAL_SELECTOR};
 
 // Function to dispatch calls from the ethereum app.
 void dispatch_plugin_calls(int message, void *parameters) {

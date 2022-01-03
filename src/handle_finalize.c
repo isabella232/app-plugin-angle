@@ -8,24 +8,41 @@ void handle_finalize(void *parameters) {
 
     switch (context->selectorIndex) {
         case MINT:
-            // amount, minStableAmount, (user if user != sender)
+            // amount, minStableAmount/minCollatAmount
             msg->numScreens = 2;
             // If the beneficiary is NOT the sender, we will need an additional screen to display
             // it.
-            if (memcmp(msg->address, context->mint_ctx.user, ADDRESS_LENGTH) != 0) {
+            if (memcmp(msg->address, context->agToken_ctx.beneficiary, ADDRESS_LENGTH) != 0) {
                 msg->numScreens += 1;
             }
             break;
         case BURN:
-            // amount, (burner if burner or dest != sender), minCollatAmount, (dest if burner or
-            // dest != sender)
+            // amount, minCollatAmount
             msg->numScreens = 2;
             // If the burner or the beneficiary is NOT the sender, we will need 2 additional screens
             // to display them.
-            if (memcmp(msg->address, context->burn_ctx.burner, ADDRESS_LENGTH) != 0 ||
-                memcmp(msg->address, context->burn_ctx.dest, ADDRESS_LENGTH) != 0) {
+            if (memcmp(msg->address, context->agToken_ctx.burner, ADDRESS_LENGTH) != 0 ||
+                memcmp(msg->address, context->agToken_ctx.beneficiary, ADDRESS_LENGTH) != 0) {
                 msg->numScreens += 2;
             }
+            break;
+        case OPEN_PERPETUAL:
+            // amount, leverage, maxOracleRate, max_opening_fees
+            msg->numScreens = 4;
+            // If the beneficiary is NOT the sender, we will need an additional screen to display
+            // it.
+            if (memcmp(msg->address, context->perpetual_ctx.beneficiary, ADDRESS_LENGTH) != 0) {
+                msg->numScreens += 1;
+            }
+            break;
+        case ADD_TO_PERPETUAL:
+            // perpetualID, amount
+            msg->numScreens = 2;
+            break;
+        case GET_REWARD_PERPETUAL:
+        case CLOSE_PERPETUAL:
+            // perpetualID
+            msg->numScreens = 1;
             break;
         default:
             PRINTF("Selector Index not supported: %d\n", context->selectorIndex);
