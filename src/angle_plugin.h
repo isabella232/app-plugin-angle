@@ -68,24 +68,6 @@ typedef struct perpetual_ctx_t {
     uint16_t leverage;  // leverage = ('committedAmount' + 'minNetMargin') / 'minNetMargin'
 } perpetual_ctx_t;
 
-// typedef struct open_perpetual_ctx_t {
-//     uint8_t owner[ADDRESS_LENGTH];
-//     uint8_t margin[INT256_LENGTH];
-//     uint8_t committedAmount[INT256_LENGTH];
-//     uint8_t maxOracleRate[INT256_LENGTH];
-//     uint8_t minNetMargin[INT256_LENGTH];
-// } open_perpetual_ctx_t;
-
-// typedef struct close_perpetual_ctx_t {
-//     uint8_t perpetualID[INT256_LENGTH];
-//     uint8_t to[ADDRESS_LENGTH];
-//     uint8_t minCashOutAmount[INT256_LENGTH];
-// } close_perpetual_ctx_t;
-
-// typedef struct get_reward_perpetual_ctx_t {
-//     uint8_t perpetualID[INT256_LENGTH];
-// } get_reward_perpetual_ctx_t;
-
 // Shared global memory with Ethereum app. Must be at most 5 * 32 bytes.
 // EDIT THIS: This struct is used by your plugin to save the parameters you parse. You
 // will need to adapt this struct to your plugin.
@@ -139,6 +121,8 @@ static const perpetual_manager_t PERPETUAL_MANAGERS[] = {
 #define NUMBER_OF_POOL_MANAGERS      (sizeof(POOL_MANAGERS) / sizeof(manager_contract_t))
 #define NUMBER_OF_PERPETUAL_MANAGERS (sizeof(PERPETUAL_MANAGERS) / sizeof(manager_contract_t))
 #define MANAGER_CONTRACT_NOT_FOUND   -1
+
+#define MAX_LEVERAGE_DISPLAYABLE 0xFFFF
 
 void handle_provide_parameter(void *parameters);
 void handle_query_contract_ui(void *parameters);

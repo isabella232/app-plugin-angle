@@ -57,10 +57,14 @@ static void handle_perpetual_display(ethQueryContractUI_t *msg, context_t *conte
                               true);
                 break;
             case 1: {
-                // convert context leverage to big endian byte array
-                uint8_t leverage_BE[2] = {perpetual_ctx->leverage >> 8,
-                                          perpetual_ctx->leverage & 0xFF};
-                set_integer_ui(msg, "Leverage", leverage_BE, sizeof(leverage_BE));
+                if (perpetual_ctx->leverage == MAX_LEVERAGE_DISPLAYABLE) {
+                    set_message_ui(msg, "Warning", "leverage > 65535");
+                } else {
+                    // convert context leverage to big endian byte array
+                    uint8_t leverage_BE[2] = {perpetual_ctx->leverage >> 8,
+                                              perpetual_ctx->leverage & 0xFF};
+                    set_integer_ui(msg, "Leverage", leverage_BE, sizeof(leverage_BE));
+                }
             } break;
             case 2:
                 set_amount_ui(msg,

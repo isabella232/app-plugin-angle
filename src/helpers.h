@@ -18,7 +18,7 @@ int16_t get_manager_contract_index(uint8_t *address,
 // assertion that 256 <= margin <= covered_amount <= margin.2^16
 // Currently Angle only supports leverages up to 100 in its frontend but who knows, maybe it'll get
 // more degen in the future
-void compute_leverage(uint16_t *leverage, uint8_t committedAmount[32], uint8_t minNetMargin[32]);
+int compute_leverage(uint16_t *leverage, uint8_t committedAmount[32], uint8_t minNetMargin[32]);
 
 // Compute 'max_opening_fees' = 'margin' - 'minNetMargin'
 void compute_fees(uint8_t fees[32], uint8_t margin[32], uint8_t minNetMargin[32]);

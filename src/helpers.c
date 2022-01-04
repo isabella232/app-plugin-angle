@@ -38,7 +38,7 @@ int16_t get_manager_contract_index(uint8_t *manager_contract_addr,
 // assertion that 256 <= margin <= covered_amount <= margin.2^16
 // Currently Angle only supports leverages up to 100 in its frontend but who knows, maybe it'll get
 // more degen in the future
-void compute_leverage(uint16_t *leverage, uint8_t committedAmount[32], uint8_t minNetMargin[32]) {
+int compute_leverage(uint16_t *leverage, uint8_t committedAmount[32], uint8_t minNetMargin[32]) {
     uint8_t zero_offset = 0;
     while (committedAmount[zero_offset] == 0 && minNetMargin[zero_offset] == 0 &&
            zero_offset < INT256_LENGTH) {
@@ -47,12 +47,12 @@ void compute_leverage(uint16_t *leverage, uint8_t committedAmount[32], uint8_t m
 
     // committedAmount should be >= 256
     if (zero_offset >= INT256_LENGTH - 1) {
-        os_sched_exit(0);
+        return -1;
     }
 
     // minNetMargin should be <= to committedAmount
     if (minNetMargin[zero_offset] > committedAmount[zero_offset]) {
-        os_sched_exit(0);
+        return -1;
     }
 
     uint16_t committedAmount_msb =
@@ -61,10 +61,12 @@ void compute_leverage(uint16_t *leverage, uint8_t committedAmount[32], uint8_t m
 
     // if minNetMargin_msb == 0, then leverage is at least 2^16
     if (minNetMargin_msb == 0) {
-        *leverage = 0xFFFF;
+        *leverage = MAX_LEVERAGE_DISPLAYABLE;
     } else {
         *leverage = committedAmount_msb / minNetMargin_msb;
     }
+
+    return 0;
 }
 
 // Compute 'max_opening_fees' = 'margin' - 'minNetMargin'
@@ -128,4 +130,10 @@ void set_integer_ui(ethQueryContractUI_t *msg, char *title, uint8_t *integer, si
     if (uint256_to_decimal(integer, integer_size, msg->msg, msg->msgLength) == false) {
         THROW(EXCEPTION_OVERFLOW);
     }
+}
+
+// Set UI for a screen showing a basic message.
+void set_message_ui(ethQueryContractUI_t *msg, char *title, char *message) {
+    strlcpy(msg->title, title, msg->titleLength);
+    strlcpy(msg->msg, message, msg->msgLength);
 }

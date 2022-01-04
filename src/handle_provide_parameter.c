@@ -80,9 +80,11 @@ static void handle_perpetual(ethPluginProvideParameter_t *msg, context_t *contex
         case MIN_NET_MARGIN:  // minimum amount to open the perpetual with (original amount sent
                               // minus protocol fees)
         {
-            compute_leverage(&perpetual_ctx->leverage,
-                             perpetual_ctx->committedAmount,
-                             msg->parameter);
+            if (compute_leverage(&perpetual_ctx->leverage,
+                                 perpetual_ctx->committedAmount,
+                                 msg->parameter) != 0) {
+                msg->result = ETH_PLUGIN_RESULT_ERROR;
+            }
             compute_fees(perpetual_ctx->max_opening_fees, perpetual_ctx->amount, msg->parameter);
             context->next_param = UNEXPECTED_PARAMETER;
         } break;
