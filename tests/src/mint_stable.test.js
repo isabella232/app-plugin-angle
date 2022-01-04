@@ -17,8 +17,6 @@ const abi = require(abi_path);
 test('[Nano S] Mint agEUR with USDC with sender != user', zemu("nanos", async (sim, eth) => {
   const contract = new ethers.Contract(contractAddr, abi);
 
-  // Constants used to create the transaction
-  // EDIT THIS: Remove what you don't need
   const amount = parseUnits("25213382881", 'wei');
   const user = RANDOM_ADDRESS;
   const poolManager = "0xe9f183fc656656f1f17af1f2b0df79b8ff9ad8ed";
@@ -53,8 +51,6 @@ test('[Nano S] Mint agEUR with USDC with sender != user', zemu("nanos", async (s
 test('[Nano S] Mint agEUR with USDC with sender == user', zemu("nanos", async (sim, eth) => {
   const contract = new ethers.Contract(contractAddr, abi);
 
-  // Constants used to create the transaction
-  // EDIT THIS: Remove what you don't need
   const amount = parseUnits("25213382881", 'wei');
   const user = SPECULOS_ADDRESS;
   const poolManager = "0xe9f183fc656656f1f17af1f2b0df79b8ff9ad8ed";

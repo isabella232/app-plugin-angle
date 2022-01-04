@@ -4,6 +4,12 @@ import { waitForAppScreen, zemu, genericTx, SPECULOS_ADDRESS, RANDOM_ADDRESS, tx
 import { ethers } from "ethers";
 import { parseEther, parseUnits} from "ethers/lib/utils";
 
+// Angle Protocol: Stable Master Front (proxy)
+const contractAddr = "0x4121a258674e507c990cdf390f74d4ef27592114";
+const pluginName = "angle";
+const abi_path = `../${pluginName}/abis/` + contractAddr + '.json';
+const abi = require(abi_path);
+
 // Reference transaction for this test:
 // https://etherscan.io/tx/0x3bf0344cfec77fc3ec8767c38ae05dc3b7bd025625eec6d85ed6ca86ced74b13
 
@@ -41,6 +47,113 @@ test('[Nano S] Open perpetual with sender == owner', zemu("nanos", async (sim, e
 
   await tx;
 }));
+
+test('[Nano S] Open perpetual with huge leverage', zemu("nanos", async (sim, eth) => {
+    const contract = new ethers.Contract(contractAddr, abi);
+
+    const owner = SPECULOS_ADDRESS;
+    const margin = parseUnits("250", 'wei');
+    const committedAmount = parseUnits("129026631104596981827926", 'wei');
+    const maxOracleRate = parseUnits("886104196984644380", 'wei');
+    const minNetMargin = parseUnits("200", 'wei');
+
+    const {data} = await contract.populateTransaction.openPerpetual(owner, margin, committedAmount, maxOracleRate, minNetMargin);
+
+    // Get the generic transaction template
+    let unsignedTx = genericTx;
+    // Modify `to` to make it interact with the contract
+    unsignedTx.to = contractAddr;
+    // Modify the attached data
+    unsignedTx.data = data;
+
+    // Create serializedTx and remove the "0x" prefix
+    const serializedTx = ethers.utils.serializeTransaction(unsignedTx).slice(2);
+
+    const tx = eth.signTransaction(
+      "44'/60'/0'/0",
+      serializedTx,
+    );
+
+    // Wait for the application to actually load and parse the transaction
+    await waitForAppScreen(sim);
+    // Navigate the display by pressing the right button 14 times, then pressing both buttons to accept the transaction.
+    await sim.navigateAndCompareSnapshots('.', 'nanos_open_perpetual_with_huge_leverage', [11, 0]);
+
+    await tx;
+  }));
+
+
+test('[Nano S] Open perpetual with leverage < 1 should fail', zemu("nanos", async (sim, eth) => {
+  const contract = new ethers.Contract(contractAddr, abi);
+
+  const owner = SPECULOS_ADDRESS;
+  const margin = parseUnits("1226631104596981827926", 'wei');
+  const maxOracleRate = parseUnits("886104196984644380", 'wei');
+
+  const x = 0x12345678;
+  const committedAmount = parseUnits(x.toString(), 'wei');
+  const minNetMargin = parseUnits((2*x).toString(), 'wei');
+
+  const {data} = await contract.populateTransaction.openPerpetual(owner, margin, committedAmount, maxOracleRate, minNetMargin);
+
+  // Get the generic transaction template
+  let unsignedTx = genericTx;
+  // Modify `to` to make it interact with the contract
+  unsignedTx.to = contractAddr;
+  // Modify the attached data
+  unsignedTx.data = data;
+
+  // Create serializedTx and remove the "0x" prefix
+  const serializedTx = ethers.utils.serializeTransaction(unsignedTx).slice(2);
+
+  const tx = eth.signTransaction(
+    "44'/60'/0'/0",
+    serializedTx,
+  );
+
+  try {
+      await tx;
+  } catch (error) {
+    // 'EthAppPleaseEnableContractData' == 0x6A80, a common error code which actually means here that the plugin had some error parsing the tx
+    expect(error["name"]).toBe('EthAppPleaseEnableContractData')
+  }
+
+}));
+
+test('[Nano S] Open perpetual with commitedAmount too low should exit', zemu("nanos", async (sim, eth) => {
+    const contract = new ethers.Contract(contractAddr, abi);
+
+    const owner = SPECULOS_ADDRESS;
+    const margin = parseUnits("1226631104596981827926", 'wei');
+    const committedAmount = parseUnits("100", 'wei');
+    const maxOracleRate = parseUnits("886104196984644380", 'wei');
+    const minNetMargin = parseUnits("1026631104596981827926", 'wei');
+
+    const {data} = await contract.populateTransaction.openPerpetual(owner, margin, committedAmount, maxOracleRate, minNetMargin);
+
+    // Get the generic transaction template
+    let unsignedTx = genericTx;
+    // Modify `to` to make it interact with the contract
+    unsignedTx.to = contractAddr;
+    // Modify the attached data
+    unsignedTx.data = data;
+
+    // Create serializedTx and remove the "0x" prefix
+    const serializedTx = ethers.utils.serializeTransaction(unsignedTx).slice(2);
+
+    const tx = eth.signTransaction(
+      "44'/60'/0'/0",
+      serializedTx,
+    );
+
+    try {
+        await tx;
+    } catch (error) {
+      // 'EthAppPleaseEnableContractData' == 0x6A80, a common error code which actually means here that the plugin had some error parsing the tx
+      expect(error["name"]).toBe('EthAppPleaseEnableContractData')
+    }
+
+  }));
 
 // NanoX test (same as nano s)
 test.skip('[Nano X] Open perpetual with sender != owner', zemu("nanox", async (sim, eth) => {
