@@ -6,13 +6,17 @@ static void handle_agToken(ethPluginProvideParameter_t *msg, context_t *context)
     switch (context->next_param) {
         case AMOUNT:  // amount of collateral/agToken
             copy_parameter(agToken_ctx->amount, sizeof(agToken_ctx->amount), msg->parameter);
-            context->next_param = context->selectorIndex == MINT ? BENEFICIARY : BURNER;
+            if (context->selectorIndex == MINT || context->selectorIndex == SLP_DEPOSIT) {
+                context->next_param = BENEFICIARY;
+            } else {
+                context->next_param = BURNER;
+            }
             break;
-        case BURNER:  // address of agToken burner
+        case BURNER:  // address of agToken/sanToken burner
             copy_address(agToken_ctx->burner, sizeof(agToken_ctx->burner), msg->parameter);
             context->next_param = BENEFICIARY;
             break;
-        case BENEFICIARY:  // address of agtoken/collateral receiver
+        case BENEFICIARY:  // address of agtoken/collateral/sanToken receiver
             copy_address(agToken_ctx->beneficiary,
                          sizeof(agToken_ctx->beneficiary),
                          msg->parameter);
@@ -24,7 +28,11 @@ static void handle_agToken(ethPluginProvideParameter_t *msg, context_t *context)
                 get_manager_contract_index(msg->parameter + PARAMETER_LENGTH - ADDRESS_LENGTH,
                                            POOL_MANAGERS,
                                            NUMBER_OF_POOL_MANAGERS);
-            context->next_param = MIN_RECEIVED_AMOUNT;
+            if (context->selectorIndex == SLP_DEPOSIT || context->selectorIndex == SLP_WITHDRAW) {
+                context->next_param = UNEXPECTED_PARAMETER;
+            } else {
+                context->next_param = MIN_RECEIVED_AMOUNT;
+            }
             break;
         case MIN_RECEIVED_AMOUNT:  // minimum of agToken / collateral to receive for the tx not to
                                    // fail
@@ -112,6 +120,8 @@ void handle_provide_parameter(void *parameters) {
     switch (context->selectorIndex) {
         case MINT:
         case BURN:
+        case SLP_DEPOSIT:
+        case SLP_WITHDRAW:
             handle_agToken(msg, context);
             break;
         case OPEN_PERPETUAL:

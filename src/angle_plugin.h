@@ -6,7 +6,7 @@
 
 // Number of selectors defined in this plugin. Should match the enum `selector_t`.
 // EDIT THIS: Put in the number of selectors your plugin is going to support.
-#define NUM_SELECTORS 6
+#define NUM_SELECTORS 8
 
 // Name of the plugin.
 // EDIT THIS: Replace with your plugin name.
@@ -18,6 +18,8 @@
 typedef enum {
     MINT = 0,
     BURN,
+    SLP_DEPOSIT,
+    SLP_WITHDRAW,
     OPEN_PERPETUAL,
     ADD_TO_PERPETUAL,
     CLOSE_PERPETUAL,
@@ -42,7 +44,7 @@ typedef enum {
 
 extern const uint8_t *const ANGLE_SELECTORS[NUM_SELECTORS];
 
-// STABLE METHODS
+// STABLE METHODS + SLP
 typedef struct agToken_ctx_t {
     uint8_t amount[INT256_LENGTH];
     uint8_t burner[ADDRESS_LENGTH];

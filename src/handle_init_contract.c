@@ -45,6 +45,8 @@ void handle_init_contract(void *parameters) {
     switch (context->selectorIndex) {
         case MINT:
         case BURN:
+        case SLP_DEPOSIT:
+        case SLP_WITHDRAW:
             context->next_param = AMOUNT;
             break;
         case OPEN_PERPETUAL:

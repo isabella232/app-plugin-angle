@@ -26,6 +26,25 @@ void handle_finalize(void *parameters) {
                 msg->numScreens += 2;
             }
             break;
+        case SLP_DEPOSIT:
+            // amount
+            msg->numScreens = 1;
+            // If the beneficiary is NOT the sender, we will need an additional screen to display
+            // it.
+            if (memcmp(msg->address, context->agToken_ctx.beneficiary, ADDRESS_LENGTH) != 0) {
+                msg->numScreens += 1;
+            }
+            break;
+        case SLP_WITHDRAW:
+            // amount
+            msg->numScreens = 1;
+            // If the burner or the beneficiary is NOT the sender, we will need 2 additional screens
+            // to display them.
+            if (memcmp(msg->address, context->agToken_ctx.burner, ADDRESS_LENGTH) != 0 ||
+                memcmp(msg->address, context->agToken_ctx.beneficiary, ADDRESS_LENGTH) != 0) {
+                msg->numScreens += 2;
+            }
+            break;
         case OPEN_PERPETUAL:
             // amount, leverage, maxOracleRate, max_opening_fees
             msg->numScreens = 4;

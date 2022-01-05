@@ -3,39 +3,68 @@
 
 static void handle_agToken_display(ethQueryContractUI_t *msg, context_t *context) {
     agToken_ctx_t *agToken_ctx = &context->agToken_ctx;
-    switch (msg->screenIndex) {
-        case 0:
-            set_amount_ui(msg,
-                          "Send",
-                          agToken_ctx->amount,
-                          sizeof(agToken_ctx->amount),
-                          POOL_MANAGERS,
-                          NUMBER_OF_POOL_MANAGERS,
-                          agToken_ctx->poolManagerIndex,
-                          context->selectorIndex == MINT);
-            break;
-        case 1:
-            set_amount_ui(msg,
-                          "Receive Min.",
-                          agToken_ctx->min_amount_received,
-                          sizeof(agToken_ctx->min_amount_received),
-                          POOL_MANAGERS,
-                          NUMBER_OF_POOL_MANAGERS,
-                          agToken_ctx->poolManagerIndex,
-                          context->selectorIndex == BURN);
-            break;
-        case 2:
-            // optional
-            set_address_ui(msg, "Beneficiary", agToken_ctx->beneficiary);
-            break;
-        case 3:
-            // optional
-            set_address_ui(msg, "Burner", agToken_ctx->burner);
-            break;
-        default:
-            PRINTF("Received an invalid screenIndex\n");
-            msg->result = ETH_PLUGIN_RESULT_ERROR;
-            return;
+    if (context->selectorIndex == MINT || context->selectorIndex == BURN) {
+        switch (msg->screenIndex) {
+            case 0:
+                set_amount_ui(msg,
+                              "Send",
+                              agToken_ctx->amount,
+                              sizeof(agToken_ctx->amount),
+                              POOL_MANAGERS,
+                              NUMBER_OF_POOL_MANAGERS,
+                              agToken_ctx->poolManagerIndex,
+                              context->selectorIndex == MINT);
+                break;
+            case 1:
+                set_amount_ui(msg,
+                              "Receive Min.",
+                              agToken_ctx->min_amount_received,
+                              sizeof(agToken_ctx->min_amount_received),
+                              POOL_MANAGERS,
+                              NUMBER_OF_POOL_MANAGERS,
+                              agToken_ctx->poolManagerIndex,
+                              context->selectorIndex == BURN);
+                break;
+            case 2:
+                // optional
+                set_address_ui(msg, "Beneficiary", agToken_ctx->beneficiary);
+                break;
+            case 3:
+                // optional
+                set_address_ui(msg, "Burner", agToken_ctx->burner);
+                break;
+            default:
+                PRINTF("Received an invalid screenIndex\n");
+                msg->result = ETH_PLUGIN_RESULT_ERROR;
+                return;
+        }
+    }
+    // SLP deposit/withdraw
+    else {
+        switch (msg->screenIndex) {
+            case 0:
+                set_amount_ui(msg,
+                              context->selectorIndex == SLP_DEPOSIT ? "Send" : "Withdraw",
+                              agToken_ctx->amount,
+                              sizeof(agToken_ctx->amount),
+                              POOL_MANAGERS,
+                              NUMBER_OF_POOL_MANAGERS,
+                              agToken_ctx->poolManagerIndex,
+                              true);
+                break;
+            case 1:
+                // optional
+                set_address_ui(msg, "Beneficiary", agToken_ctx->beneficiary);
+                break;
+            case 2:
+                // optional
+                set_address_ui(msg, "Burner", agToken_ctx->burner);
+                break;
+            default:
+                PRINTF("Received an invalid screenIndex\n");
+                msg->result = ETH_PLUGIN_RESULT_ERROR;
+                return;
+        }
     }
 }
 // amount, leverage, maxOracleRate, max_opening_fees
@@ -137,6 +166,8 @@ void handle_query_contract_ui(void *parameters) {
     switch (context->selectorIndex) {
         case MINT:
         case BURN:
+        case SLP_DEPOSIT:
+        case SLP_WITHDRAW:
             handle_agToken_display(msg, context);
             break;
         case OPEN_PERPETUAL:

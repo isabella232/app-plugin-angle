@@ -17,6 +17,12 @@ void handle_query_contract_id(void *parameters) {
         case BURN:
             strlcpy(msg->version, "Burn", msg->versionLength);
             break;
+        case SLP_DEPOSIT:
+            strlcpy(msg->version, "Deposit SLP", msg->versionLength);
+            break;
+        case SLP_WITHDRAW:
+            strlcpy(msg->version, "Withdraw SLP", msg->versionLength);
+            break;
         case OPEN_PERPETUAL:
             strlcpy(msg->version, "Open Perpetual", msg->versionLength);
             break;
