@@ -40,3 +40,6 @@ void set_address_ui(ethQueryContractUI_t *msg, char *title, uint8_t *address);
 
 // Set UI for a screen showing a integer.
 void set_integer_ui(ethQueryContractUI_t *msg, char *title, uint8_t *integer, size_t integer_size);
+
+// Set UI for a screen showing a basic message.
+void set_message_ui(ethQueryContractUI_t *msg, char *title, char *message);
