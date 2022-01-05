@@ -71,7 +71,8 @@ void handle_finalize(void *parameters) {
                 msg->numScreens = 2;
             }
             // if minCashOut != 0, let's display it
-            if (cx_math_is_zero(context->perpetual_ctx.amount, sizeof(context->perpetual_ctx.amount)) != true) {
+            if (cx_math_is_zero(context->perpetual_ctx.amount,
+                                sizeof(context->perpetual_ctx.amount)) != true) {
                 msg->numScreens = 3;
             }
             break;
