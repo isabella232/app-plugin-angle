@@ -82,7 +82,7 @@ test('[Nano S] Open perpetual with huge leverage', zemu("nanos", async (sim, eth
     await tx;
   }));
 
-test('[Nano S] Open perpetual with commitedAmount too low should exit', zemu("nanos", async (sim, eth) => {
+test('[Nano S] Open perpetual with commitedAmount too low should fail', zemu("nanos", async (sim, eth) => {
     const contract = new ethers.Contract(contractAddr, abi);
 
     const owner = SPECULOS_ADDRESS;

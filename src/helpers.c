@@ -40,8 +40,7 @@ int16_t get_manager_contract_index(uint8_t *manager_contract_addr,
 // more degen in the future
 int compute_leverage(uint16_t *leverage, uint8_t committedAmount[32], uint8_t minNetMargin[32]) {
     uint8_t zero_offset = 0;
-    while (committedAmount[zero_offset] == 0 && minNetMargin[zero_offset] == 0 &&
-           zero_offset < INT256_LENGTH) {
+    while (committedAmount[zero_offset] == 0 && zero_offset < INT256_LENGTH) {
         zero_offset++;
     }
 
