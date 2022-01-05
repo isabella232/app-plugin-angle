@@ -78,7 +78,7 @@ static void handle_perpetual_display(ethQueryContractUI_t *msg, context_t *conte
                 break;
             case 3:
                 set_amount_ui(msg,
-                              "Max Opening Fees",
+                              "Opening Fees",
                               perpetual_ctx->max_opening_fees,
                               sizeof(perpetual_ctx->max_opening_fees),
                               PERPETUAL_MANAGERS,
