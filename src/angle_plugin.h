@@ -39,6 +39,7 @@ typedef enum {
     MAX_ORACLE_RATE,
     MIN_NET_MARGIN,
     PERPETUAL_ID,
+    FLAGS_PARAM,
     UNEXPECTED_PARAMETER,
 } parameter;
 

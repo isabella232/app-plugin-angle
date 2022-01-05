@@ -29,7 +29,7 @@ static void handle_agToken(ethPluginProvideParameter_t *msg, context_t *context)
                                            POOL_MANAGERS,
                                            NUMBER_OF_POOL_MANAGERS);
             if (context->selectorIndex == SLP_DEPOSIT || context->selectorIndex == SLP_WITHDRAW) {
-                context->next_param = UNEXPECTED_PARAMETER;
+                context->next_param = FLAGS_PARAM;
             } else {
                 context->next_param = MIN_RECEIVED_AMOUNT;
             }
@@ -39,6 +39,9 @@ static void handle_agToken(ethPluginProvideParameter_t *msg, context_t *context)
             copy_parameter(agToken_ctx->min_amount_received,
                            sizeof(agToken_ctx->min_amount_received),
                            msg->parameter);
+            context->next_param = FLAGS_PARAM;
+            break;
+        case FLAGS_PARAM:
             context->next_param = UNEXPECTED_PARAMETER;
             break;
         default:
@@ -68,7 +71,7 @@ static void handle_perpetual(ethPluginProvideParameter_t *msg, context_t *contex
         case AMOUNT:  // amount of collateral/agToken
             copy_parameter(perpetual_ctx->amount, sizeof(perpetual_ctx->amount), msg->parameter);
             context->next_param =
-                context->selectorIndex == OPEN_PERPETUAL ? COMMITTED_AMOUNT : UNEXPECTED_PARAMETER;
+                context->selectorIndex == OPEN_PERPETUAL ? COMMITTED_AMOUNT : FLAGS_PARAM;
             break;
         case COMMITTED_AMOUNT:  // amount of collateral covered by the perpetual to open
             copy_parameter(perpetual_ctx->committedAmount,
@@ -94,8 +97,11 @@ static void handle_perpetual(ethPluginProvideParameter_t *msg, context_t *contex
                 msg->result = ETH_PLUGIN_RESULT_ERROR;
             }
             compute_fees(perpetual_ctx->max_opening_fees, perpetual_ctx->amount, msg->parameter);
-            context->next_param = UNEXPECTED_PARAMETER;
+            context->next_param = FLAGS_PARAM;
         } break;
+        case FLAGS_PARAM:
+            context->next_param = UNEXPECTED_PARAMETER;
+            break;
         default:
             PRINTF("Param not supported: %d\n", context->next_param);
             msg->result = ETH_PLUGIN_RESULT_ERROR;
