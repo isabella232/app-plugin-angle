@@ -124,6 +124,34 @@ static void handle_perpetual_display(ethQueryContractUI_t *msg, context_t *conte
                 msg->result = ETH_PLUGIN_RESULT_ERROR;
                 return;
         }
+    } else if (context->selectorIndex == CLOSE_PERPETUAL) {
+        switch (msg->screenIndex) {
+            case 0:
+                set_integer_ui(msg,
+                               "Perpetual ID",
+                               perpetual_ctx->perpetualID,
+                               sizeof(perpetual_ctx->perpetualID));
+                break;
+            case 1:
+                // optional
+                set_address_ui(msg, "Beneficiary", perpetual_ctx->beneficiary);
+                break;
+            case 2:
+                // optional
+                set_amount_ui(msg,
+                              "Receive Min.",
+                              perpetual_ctx->amount,
+                              sizeof(perpetual_ctx->amount),
+                              PERPETUAL_MANAGERS,
+                              NUMBER_OF_PERPETUAL_MANAGERS,
+                              manager_contract_index,
+                              true);
+                break;
+            default:
+                PRINTF("Received an invalid screenIndex\n");
+                msg->result = ETH_PLUGIN_RESULT_ERROR;
+                return;
+        }
     } else {
         switch (msg->screenIndex) {
             case 0:

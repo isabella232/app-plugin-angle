@@ -59,9 +59,21 @@ void handle_finalize(void *parameters) {
             msg->numScreens = 2;
             break;
         case GET_REWARD_PERPETUAL:
+            // perpetualID
+            msg->numScreens = 1;
+            break;
         case CLOSE_PERPETUAL:
             // perpetualID
             msg->numScreens = 1;
+            // If the beneficiary is NOT the sender, we will need an additional screen to display
+            // it.
+            if (memcmp(msg->address, context->perpetual_ctx.beneficiary, ADDRESS_LENGTH) != 0) {
+                msg->numScreens = 2;
+            }
+            // if minCashOut != 0, let's display it
+            if (cx_math_is_zero(context->perpetual_ctx.amount, sizeof(context->perpetual_ctx.amount)) != true) {
+                msg->numScreens = 3;
+            }
             break;
         default:
             PRINTF("Selector Index not supported: %d\n", context->selectorIndex);
