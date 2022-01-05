@@ -50,11 +50,6 @@ int compute_leverage(uint16_t *leverage, uint8_t committedAmount[32], uint8_t mi
         return -1;
     }
 
-    // minNetMargin should be <= to committedAmount
-    if (minNetMargin[zero_offset] > committedAmount[zero_offset]) {
-        return -1;
-    }
-
     uint16_t committedAmount_msb =
         (committedAmount[zero_offset] << 8) + committedAmount[zero_offset + 1];
     uint16_t minNetMargin_msb = (minNetMargin[zero_offset] << 8) + minNetMargin[zero_offset + 1];
