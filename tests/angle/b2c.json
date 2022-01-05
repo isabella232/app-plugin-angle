@@ -14,6 +14,16 @@
           "erc20OfInterest": [],
           "method": "burn",
           "plugin": "Angle"
+        },
+        "0x2e2d2984": {
+          "erc20OfInterest": [],
+          "method": "deposit",
+          "plugin": "Angle"
+        },
+        "0x23e103a8": {
+          "erc20OfInterest": [],
+          "method": "withdraw",
+          "plugin": "Angle"
         }
       }
     },
