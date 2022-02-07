@@ -5,7 +5,7 @@ static void handle_agToken(ethPluginProvideParameter_t *msg, context_t *context)
     agToken_ctx_t *agToken_ctx = &context->agToken_ctx;
     switch (context->next_param) {
         case AMOUNT:  // amount of collateral/agToken
-            copy_parameter(agToken_ctx->amount, sizeof(agToken_ctx->amount), msg->parameter);
+            copy_parameter(agToken_ctx->amount, msg->parameter, sizeof(agToken_ctx->amount));
             if (context->selectorIndex == MINT || context->selectorIndex == SLP_DEPOSIT) {
                 context->next_param = BENEFICIARY;
             } else {
@@ -13,13 +13,13 @@ static void handle_agToken(ethPluginProvideParameter_t *msg, context_t *context)
             }
             break;
         case BURNER:  // address of agToken/sanToken burner
-            copy_address(agToken_ctx->burner, sizeof(agToken_ctx->burner), msg->parameter);
+            copy_address(agToken_ctx->burner, msg->parameter, sizeof(agToken_ctx->burner));
             context->next_param = BENEFICIARY;
             break;
         case BENEFICIARY:  // address of agtoken/collateral/sanToken receiver
             copy_address(agToken_ctx->beneficiary,
-                         sizeof(agToken_ctx->beneficiary),
-                         msg->parameter);
+                         msg->parameter,
+                         sizeof(agToken_ctx->beneficiary));
             context->next_param = POOL_MANAGER;
             break;
         case POOL_MANAGER:
@@ -37,8 +37,8 @@ static void handle_agToken(ethPluginProvideParameter_t *msg, context_t *context)
         case MIN_RECEIVED_AMOUNT:  // minimum of agToken / collateral to receive for the tx not to
                                    // fail
             copy_parameter(agToken_ctx->min_amount_received,
-                           sizeof(agToken_ctx->min_amount_received),
-                           msg->parameter);
+                           msg->parameter,
+                           sizeof(agToken_ctx->min_amount_received));
             context->next_param = FLAGS_PARAM;
             break;
         case FLAGS_PARAM:
@@ -56,27 +56,27 @@ static void handle_perpetual(ethPluginProvideParameter_t *msg, context_t *contex
     switch (context->next_param) {
         case PERPETUAL_ID:  // ID of an existing perpetual
             copy_parameter(perpetual_ctx->perpetualID,
-                           sizeof(perpetual_ctx->perpetualID),
-                           msg->parameter);
+                           msg->parameter,
+                           sizeof(perpetual_ctx->perpetualID));
             context->next_param = context->selectorIndex == ADD_TO_PERPETUAL
                                       ? AMOUNT
                                       : CLOSE_PERPETUAL ? BENEFICIARY : UNEXPECTED_PARAMETER;
             break;
         case BENEFICIARY:  // address of perpetual/collateral receiver
             copy_address(perpetual_ctx->beneficiary,
-                         sizeof(perpetual_ctx->beneficiary),
-                         msg->parameter);
+                         msg->parameter,
+                         sizeof(perpetual_ctx->beneficiary));
             context->next_param = AMOUNT;
             break;
         case AMOUNT:  // amount of collateral/agToken
-            copy_parameter(perpetual_ctx->amount, sizeof(perpetual_ctx->amount), msg->parameter);
+            copy_parameter(perpetual_ctx->amount, msg->parameter, sizeof(perpetual_ctx->amount));
             context->next_param =
                 context->selectorIndex == OPEN_PERPETUAL ? COMMITTED_AMOUNT : FLAGS_PARAM;
             break;
         case COMMITTED_AMOUNT:  // amount of collateral covered by the perpetual to open
             copy_parameter(perpetual_ctx->committedAmount,
-                           sizeof(perpetual_ctx->committedAmount),
-                           msg->parameter);
+                           msg->parameter,
+                           sizeof(perpetual_ctx->committedAmount));
             context->next_param = MAX_ORACLE_RATE;
             break;
         case MAX_ORACLE_RATE:  // maximum price of a unit of collateral denominated in agToken that
@@ -84,8 +84,8 @@ static void handle_perpetual(ethPluginProvideParameter_t *msg, context_t *contex
                                // with max_oracle_rate = 0.9 means that if oracle price goes over 1
                                // USDC = 0.9 agEUR -> abort tx)
             copy_parameter(perpetual_ctx->maxOracleRate,
-                           sizeof(perpetual_ctx->maxOracleRate),
-                           msg->parameter);
+                           msg->parameter,
+                           sizeof(perpetual_ctx->maxOracleRate));
             context->next_param = MIN_NET_MARGIN;
             break;
         case MIN_NET_MARGIN:  // minimum amount to open the perpetual with (original amount sent

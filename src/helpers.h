@@ -1,13 +1,5 @@
 #include "angle_plugin.h"
 
-// Copies the whole parameter (32 bytes long) from `src` to `dst`.
-// Useful for numbers, data...
-void copy_parameter(uint8_t *dst, size_t dst_len, uint8_t *src);
-
-// Copies a 20 byte address (located in a 32 bytes parameter) `from `src` to `dst`.
-// Useful for token addresses, user addresses...
-void copy_address(uint8_t *dst, size_t dst_len, uint8_t *src);
-
 /* Returns the index of the address provided (zero padded left from 21th to 32th bytes, evm
    "encoding") in the POOL_MANAGERS table if found. Otherwise, returns -1*/
 int16_t get_manager_contract_index(uint8_t *address,
